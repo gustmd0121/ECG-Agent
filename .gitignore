@@ -1,0 +1,26 @@
+# Model directories (ending with _hf)
+*_hf/
+
+# Wandb log directories
+/wandb/
+/src/wandb/
+
+# Model checkpoint files
+*.pt
+
+# Specific directories to exclude
+/inference/
+
+# Optional: Add common Python ignores
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.idea/
+.vscode/

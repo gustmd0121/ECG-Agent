@@ -1,0 +1,10 @@
+An error occurred during training:
+Traceback (most recent call last):
+  File "/nfs_edlab/hschung/ECG-Agent/src/overall_train_ecg.py", line 1829, in main
+  File "/nfs_edlab/hschung/anaconda3/envs/fairseq_signals/lib/python3.9/site-packages/torch/multiprocessing/spawn.py", line 328, in spawn
+    return start_processes(fn, args, nprocs, join, daemon, start_method="spawn")
+  File "/nfs_edlab/hschung/anaconda3/envs/fairseq_signals/lib/python3.9/site-packages/torch/multiprocessing/spawn.py", line 284, in start_processes
+    while not context.join():
+  File "/nfs_edlab/hschung/anaconda3/envs/fairseq_signals/lib/python3.9/site-packages/torch/multiprocessing/spawn.py", line 184, in join
+    raise ProcessExitedException(
+torch.multiprocessing.spawn.ProcessExitedException: process 0 terminated with signal SIGABRT

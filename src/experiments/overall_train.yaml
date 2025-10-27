@@ -1,0 +1,14 @@
+train_file: /nfs_edlab/hschung/MedRAX/ToolDial/dataset/train_dialogue_overall_obs.json
+test_file: /nfs_edlab/hschung/MedRAX/ToolDial/dataset/test_dialogue_overall_obs.json
+# model_id: "/nfs_edlab/hschung/MedRAX/ToolDial/experiments/model_epoch_overall_8b_final_0709_hf"
+# model_id: "/nfs_edlab/hschung/MedRAX/ToolDial/experiments/model_epoch_overall_medgemma_27b_final_0722_hf"
+# model_id: "/nfs_edlab/hschung/MedRAX/ToolDial/experiments/model_epoch_overall_3b_final_0722_hf"
+# model_id: "/nfs_edlab/hschung/MedRAX/ToolDial/experiments/model_epoch_overall_medgemma-4b-it_20250723_164729_hf"
+# model_id: "/nfs_edlab/hschung/MedRAX/ToolDial/experiments/model_epoch_overall_3b_final_hf"
+# model_id: "google/medgemma-27b-text-it"
+model_id: "unsloth/Llama-3.1-8B-Instruct"
+is_van: False
+validation_mode: 'with_gt'
+
+
+# model_id: "HOLILAB/td-llama-op"
