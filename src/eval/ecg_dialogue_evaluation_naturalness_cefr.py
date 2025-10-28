@@ -61,7 +61,7 @@ class DialogueQualityEvaluator:
         self.model_data['llama_1b'] = _load_file(kwargs.get('llama_1b_file'))
         self.model_data['llama_3b'] = _load_file(kwargs.get('llama_3b_file'))
         self.model_data['llama_8b'] = _load_file(kwargs.get('llama_8b_file'))
-        self.model_data['Qwen3_32b'] = _load_file(kwargs.get('phi4_14b_file')) # Name mapping
+        self.model_data['Qwen3_32b'] = _load_file(kwargs.get('qwen3_32b_file')) # Name mapping
 
         for model, data in self.model_data.items():
             if data:
@@ -242,7 +242,7 @@ CEFR Adherence Justification: [one-sentence justification]
         try:
             import google.generativeai as genai
             genai.configure(api_key=self.api_key)
-            self.evaluator_model = genai.GenerativeModel('gemini-1.5-flash-latest')
+            self.evaluator_model = genai.GenerativeModel('gemini-2.5-pro')
         except Exception as e:
             logger.error(f"Failed to initialize Gemini model: {e}")
             return None
@@ -405,13 +405,13 @@ def main():
     )
     # --- FILE PATHS (Update these to match your system) ---
     # Note: Using commented-out single-lead-ii paths as a template
-    parser.add_argument('--gemini_file', type=str, default="/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/Gemini/single_lead_ii/without_gt/ecg_dialogue_gemini-2.5-flash_without_gt_responses.jsonl")
-    parser.add_argument('--pulse_file', type=str, default="/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/PULSE/single_lead_ii/without_gt/PULSE_dialogue_model_responses_0707_final.json")
-    parser.add_argument('--gem_file', type=str, default="/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/GEM/single_lead_ii/without_gt/GEM_ecg_dialogue_model_responses_test.json")
-    parser.add_argument('--llama_1b_file', type=str, default="/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/single_lead_ii/llama_1b_results_0822.jsonl")
-    parser.add_argument('--llama_3b_file', type=str, default="/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/single_lead_ii/llama_3b_results_0822.jsonl")
-    parser.add_argument('--llama_8b_file', type=str, default="/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/single_lead_ii/llama_8b_results_0822.jsonl")
-    parser.add_argument('--phi4_14b_file', type=str, default="/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/single_lead_ii/results_qwen3_32b_4bit_0820_without_gt_single_lead_ii.jsonl") # Maps to Qwen
+    parser.add_argument('--gemini_file', type=str, help='Path to Gemini response file (.json or .jsonl)')
+    parser.add_argument('--pulse_file', type=str, help='Path to PULSE response file (.json)')
+    parser.add_argument('--gem_file', type=str, help='Path to GEM response file (.json)')
+    parser.add_argument('--llama_1b_file', type=str, help='Path to LLaMA-1B response file (.jsonl)')
+    parser.add_argument('--llama_3b_file', type=str, help='Path to LLaMA-3B response file (.jsonl)')
+    parser.add_argument('--llama_8b_file', type=str, help='Path to LLaMA-8B response file (.jsonl)')
+    parser.add_argument('--qwen3_32b_file', type=str, help='Path to Qwen3_32b response file (.jsonl)')
     parser.add_argument('--output_dir', type=str, default='lead_ii_naturalness_cefr_evaluation_results_0905')
     
     args = parser.parse_args()
@@ -427,7 +427,7 @@ def main():
     model_files = {
         'gemini_file': args.gemini_file, 'pulse_file': args.pulse_file, 'gem_file': args.gem_file,
         'llama_1b_file': args.llama_1b_file, 'llama_3b_file': args.llama_3b_file, 'llama_8b_file': args.llama_8b_file,
-        'phi4_14b_file': args.phi4_14b_file
+        'qwen3_32b_file': args.qwen3_32b_file
     }
 
     evaluator.load_data(**model_files)

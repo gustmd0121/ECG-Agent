@@ -60,10 +60,10 @@ class ECGDialogueEvaluator:
         self.llama_1b_responses = []
         self.llama_3b_responses = []
         self.llama_8b_responses = []
-        self.phi4_14b_responses = []
+        self.qwen3_32b_responses = []
         self.ground_truth = {}
         
-    def load_data(self, gemini_file: str = None, pulse_file: str = None, gem_file: str = None, llama_1b_file: str = None, llama_3b_file: str = None, llama_8b_file: str = None, phi4_14b_file: str = None):
+    def load_data(self, gemini_file: str = None, pulse_file: str = None, gem_file: str = None, llama_1b_file: str = None, llama_3b_file: str = None, llama_8b_file: str = None, qwen3_32b_file: str = None):
         """Load response files and ground truth data. Files are optional."""
         logger.info("Loading response data files...")
         
@@ -108,12 +108,12 @@ class ECGDialogueEvaluator:
                 logger.info(f"Loaded {len(self.llama_8b_responses)} LLaMA-8B responses")
             except Exception as e: logger.error(f"Error loading LLaMA-8B file {llama_8b_file}: {e}")
 
-        if phi4_14b_file and os.path.exists(phi4_14b_file):
+        if qwen3_32b_file and os.path.exists(qwen3_32b_file):
             try:
-                with open(phi4_14b_file, 'r') as f: self.phi4_14b_responses = [json.loads(line) for line in f if line.strip()]
-                logger.info(f"Loaded {len(self.phi4_14b_responses)} Qwen3_32b responses")
-            except Exception as e: logger.error(f"Error loading Qwen3_32b file {phi4_14b_file}: {e}")
-        
+                with open(qwen3_32b_file, 'r') as f: self.qwen3_32b_responses = [json.loads(line) for line in f if line.strip()]
+                logger.info(f"Loaded {len(self.qwen3_32b_responses)} Qwen3_32b responses")
+            except Exception as e: logger.error(f"Error loading Qwen3_32b file {qwen3_32b_file}: {e}")
+
         # Load ground truth from Hugging Face dataset
         self._load_ground_truth_from_hf()
 
@@ -140,7 +140,7 @@ class ECGDialogueEvaluator:
             (self.llama_1b_responses, common_format_id_extractor, 'LLaMA-1B', lambda r: r.get('generated_dialogue')),
             (self.llama_3b_responses, common_format_id_extractor, 'LLaMA-3B', lambda r: r.get('generated_dialogue')),
             (self.llama_8b_responses, common_format_id_extractor, 'LLaMA-8B', lambda r: r.get('generated_dialogue')),
-            (self.phi4_14b_responses, common_format_id_extractor, 'Qwen3_32b', lambda r: r.get('generated_dialogue'))
+            (self.qwen3_32b_responses, common_format_id_extractor, 'Qwen3_32b', lambda r: r.get('generated_dialogue'))
         ]
 
         loaded_sources = [(responses, id_ext, name, dlg_ext) for responses, id_ext, name, dlg_ext in all_model_sources if responses]
@@ -204,7 +204,7 @@ class ECGDialogueEvaluator:
         self.llama_1b_responses = [r for r in self.llama_1b_responses if common_format_id_extractor(r) in final_selected_ids]
         self.llama_3b_responses = [r for r in self.llama_3b_responses if common_format_id_extractor(r) in final_selected_ids]
         self.llama_8b_responses = [r for r in self.llama_8b_responses if common_format_id_extractor(r) in final_selected_ids]
-        self.phi4_14b_responses = [r for r in self.phi4_14b_responses if common_format_id_extractor(r) in final_selected_ids]
+        self.qwen3_32b_responses = [r for r in self.qwen3_32b_responses if common_format_id_extractor(r) in final_selected_ids]
         
         logger.info("Filtered all model data to the final sampled set. New counts:")
         logger.info(f"  - Gemini: {len(self.gemini_responses)} responses")
@@ -213,7 +213,7 @@ class ECGDialogueEvaluator:
         logger.info(f"  - LLaMA-1B: {len(self.llama_1b_responses)} responses")
         logger.info(f"  - LLaMA-3B: {len(self.llama_3b_responses)} responses")
         logger.info(f"  - LLaMA-8B: {len(self.llama_8b_responses)} responses")
-        logger.info(f"  - Qwen3_32b: {len(self.phi4_14b_responses)} responses")
+        logger.info(f"  - Qwen3_32b: {len(self.qwen3_32b_responses)} responses")
 
     def _load_existing_results(self, filename: str) -> Dict:
         """Load existing evaluation results from a JSON file to allow resuming."""
@@ -283,7 +283,7 @@ class ECGDialogueEvaluator:
         process_model_data(self.llama_1b_responses, 'llama_1b', 'generated_dialogue', common_format_id_extractor)
         process_model_data(self.llama_3b_responses, 'llama_3b', 'generated_dialogue', common_format_id_extractor)
         process_model_data(self.llama_8b_responses, 'llama_8b', 'generated_dialogue', common_format_id_extractor)
-        process_model_data(self.phi4_14b_responses, 'Qwen3_32b', 'generated_dialogue', common_format_id_extractor)
+        process_model_data(self.qwen3_32b_responses, 'Qwen3_32b', 'generated_dialogue', common_format_id_extractor)
 
         logger.info(f"Extracted and categorized responses for {len(results)} ECG IDs")
         return results
@@ -352,7 +352,7 @@ class ECGDialogueEvaluator:
         try:
             import google.generativeai as genai
             genai.configure(api_key=self.api_key)
-            model = genai.GenerativeModel('gemini-2.5-flash') # Updated model name
+            model = genai.GenerativeModel('gemini-2.5-pro') # Updated model name
         except Exception as e:
             logger.error(f"Error initializing Gemini model: {e}. Skipping tool response evaluation.")
             return {}
@@ -455,7 +455,7 @@ class ECGDialogueEvaluator:
         try:
             import google.generativeai as genai
             genai.configure(api_key=self.api_key)
-            model = genai.GenerativeModel('gemini-2.5-flash') # Updated model name
+            model = genai.GenerativeModel('gemini-2.5-pro') # Updated model name
         except Exception as e:
             logger.error(f"Error initializing Gemini model: {e}. Skipping direct response evaluation.")
             return {}
@@ -571,13 +571,13 @@ You are a medical expert evaluating an AI's ECG dialogue response. Compare the a
 
 **Evaluation Criteria:**
 1. Accuracy (1-5): How well does the response match the ground truth? Key information to look for are representative diagnosis classes (e.g., sinus rhythm, myocardial infarction) or measurement interval (e.g., Heart rate, PR interval, QRS duration, QTc interval) for post tool calls and representative key information for direct responses. 
-   - 5: Fully accurate. If the diagnosis classes mentioned by the model's response is fully accurate, as in all representative diagnosis classes are identified and correct, this score should be applied. For measurement interval, if for example the heart rate, pr interval, qrs duration, and qtc interval is accurate within the normal range for a normal ECG, this score should be applied. 
-   - 3: Partially accurate. If the diagnosis classes mentioned by the model's response is partially inaccurate, as in one representative diagnosis class is identified but another one is inaccurate (50% accuracy), this score should be applied. For measurement interval, if for example the measurements of heart rate and pr interval is accurate within the normal range for a normal ECG but the QRS duration and QTC interval are inaccurate, this score should be applied.  
-   - 1: Largely inaccurate. If the diagnosis classes mentioned by the model's response is entirely inaccurate, as in not a single relevant class is identified, this score should be applied. For measurement interval, if for example abnormal heart rate, pr interval, qrs duration, and qtc interval is identified for a completely normal ECG, this score should be applied.
+    - 5: Fully accurate. If the diagnosis classes mentioned by the model's response is fully accurate, as in all representative diagnosis classes are identified and correct, this score should be applied. For measurement interval, if for example the heart rate, pr interval, qrs duration, and qtc interval is accurate within the normal range for a normal ECG, this score should be applied. 
+    - 3: Partially accurate. If the diagnosis classes mentioned by the model's response is partially inaccurate, as in one representative diagnosis class is identified but another one is inaccurate (50% accuracy), this score should be applied. For measurement interval, if for example the measurements of heart rate and pr interval is accurate within the normal range for a normal ECG but the QRS duration and QTC interval are inaccurate, this score should be applied.  
+    - 1: Largely inaccurate. If the diagnosis classes mentioned by the model's response is entirely inaccurate, as in not a single relevant class is identified, this score should be applied. For measurement interval, if for example abnormal heart rate, pr interval, qrs duration, and qtc interval is identified for a completely normal ECG, this score should be applied.
 2. Completeness (1-5): Does the response cover essential information mentioned in the ground truth? This score focuses on whether the answer is comprehensive and includes as much essential information as possible. 
-   - 5: Comprehensive. If the response includes all key information from the ground truth, this score should be applied. 
-   - 3: Partially complete. If the response includes some key information but is missing others, this score should be applied.
-   - 1: Incomplete. If the response is missing all key information, this score should be applied.
+    - 5: Comprehensive. If the response includes all key information from the ground truth, this score should be applied. 
+    - 3: Partially complete. If the response includes some key information but is missing others, this score should be applied.
+    - 1: Incomplete. If the response is missing all key information, this score should be applied.
 
 **Instructions:** Rate each criterion and provide a brief justification.
 
@@ -610,14 +610,14 @@ You are a medical expert evaluating an AI's ECG dialogue response. Compare the a
 
 **Evaluation Criteria:**
 1. Accuracy (1-5): How well does the response match the ground truth? Key information to look for are representative diagnosis classes (e.g., sinus rhythm, myocardial infarction) or measurement interval (e.g., Heart rate, PR interval, QRS duration, QTc interval) for post tool calls and representative key information for direct responses. 
-   - 5: Fully accurate. If the diagnosis classes mentioned by the model's response is fully accurate, as in all representative diagnosis classes are identified and correct, this score should be applied. For measurement interval, if for example the heart rate, pr interval, qrs duration, and qtc interval is accurate within the normal range for a normal ECG, this score should be applied.  
-   - 3: Partially accurate. If the diagnosis classes mentioned by the model's response is partially inaccurate, as in one representative diagnosis class is identified but another one is inaccurate (50% accuracy), this score should be applied. For measurement interval, if for example the measurements of heart rate and pr interval is accurate within the normal range for a normal ECG but the QRS duration and QTC interval are inaccurate, this score should be applied.  
-   - 1: Largely inaccurate. If the diagnosis classes mentioned by the model's response is entirely inaccurate, as in not a single relevant class is identified, this score should be applied. For measurement interval, if for example abnormal heart rate, pr interval, qrs duration, and qtc interval is identified for a completely normal ECG, this score should be applied.
+    - 5: Fully accurate. If the diagnosis classes mentioned by the model's response is fully accurate, as in all representative diagnosis classes are identified and correct, this score should be applied. For measurement interval, if for example the heart rate, pr interval, qrs duration, and qtc interval is accurate within the normal range for a normal ECG, this score should be applied.  
+    - 3: Partially accurate. If the diagnosis classes mentioned by the model's response is partially inaccurate, as in one representative diagnosis class is identified but another one is inaccurate (50% accuracy), this score should be applied. For measurement interval, if for example the measurements of heart rate and pr interval is accurate within the normal range for a normal ECG but the QRS duration and QTC interval are inaccurate, this score should be applied.  
+    - 1: Largely inaccurate. If the diagnosis classes mentioned by the model's response is entirely inaccurate, as in not a single relevant class is identified, this score should be applied. For measurement interval, if for example abnormal heart rate, pr interval, qrs duration, and qtc interval is identified for a completely normal ECG, this score should be applied.
 2. Completeness (1-5): Does the response cover essential information mentioned in the ground truth? This score focuses on whether the answer is comprehensive and includes as much essential information as possible. 
-   - 5: Comprehensive. If the response includes all key information from the ground truth, this score should be applied. 
-   - 3: Partially complete. If the response includes some key information but is missing others, this score should be applied.
-   - 1: Incomplete. If the response is missing all key information, this score should be applied.
-   
+    - 5: Comprehensive. If the response includes all key information from the ground truth, this score should be applied. 
+    - 3: Partially complete. If the response includes some key information but is missing others, this score should be applied.
+    - 1: Incomplete. If the response is missing all key information, this score should be applied.
+    
 
 **Instructions:** Rate each criterion and provide a brief justification.
 
@@ -741,7 +741,25 @@ def main():
     """Main evaluation function."""
     
     parser = argparse.ArgumentParser(description="Evaluate ECG dialogue responses from multiple models.")
-    # MODIFICATION: Changed argument name and help text for clarity
+    
+    # --- MODIFIED: Added arguments for file paths ---
+    parser.add_argument('--gemini_file', type=str, help='Path to Gemini response file (.json or .jsonl)')
+    parser.add_argument('--pulse_file', type=str, help='Path to PULSE response file (.json)')
+    parser.add_argument('--gem_file', type=str, help='Path to GEM response file (.json)')
+    parser.add_argument('--llama_1b_file', type=str, help='Path to LLaMA-1B response file (.jsonl)')
+    parser.add_argument('--llama_3b_file', type=str, help='Path to LLaMA-3B response file (.jsonl)')
+    parser.add_argument('--llama_8b_file', type=str, help='Path to LLaMA-8B response file (.jsonl)')
+    parser.add_argument('--qwen3_32b_file', type=str, help='Path to Qwen3_32b response file (.jsonl)')
+
+    # --- MODIFIED: Added argument for output directory ---
+    parser.add_argument(
+        '--output_dir',
+        type=str,
+        default='evaluation_results', # Uses the class default
+        help='Directory to save evaluation results and reports.'
+    )
+    
+    # --- Existing Arguments ---
     parser.add_argument(
         '--max_samples_per_category',
         type=int,
@@ -750,87 +768,32 @@ def main():
     )
 
     parser.add_argument('--skip_post_classification', action='store_true',
-                        help='Skip evaluating post-classification responses.')    
+                        help='Skip evaluating post-classification responses.')   
 
     args = parser.parse_args()
 
-    # --- Configuration ---
-    # Using 'without_gt' files as an example
-    
-    
-    # 12-leads
-    # gemini_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/Gemini/without_gt/ecg_dialogue_gemini-2.5-flash_without_gt_responses_0707_final.json"
-    # pulse_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/PULSE/without_gt/PULSE_dialogue_model_responses_0707_final.json" 
-    # gem_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/GEM/without_gt/GEM_ecg_dialogue_model_responses_test.json"
-    # llama_1b_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/llama_1b_results_0817.jsonl"
-    # llama_3b_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/llama_3b_results_0817.jsonl"
-    # llama_8b_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/llama_8b_results_0817.jsonl"
-    # phi4_14b_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/results_qwen3_32b_4bit_0820_without_gt.jsonl"
-    
-    # gemini_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/Gemini/with_gt/ecg_dialogue_gemini-2.5-flash_with_gt_responses_0707_final.json"
-    # pulse_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/PULSE/with_gt/PULSE_dialogue_model_responses_0707_final.json" 
-    # gem_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/GEM/with_gt/GEM_ecg_dialogue_model_responses_test.json"
-    # llama_1b_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/llama_1b_results_0817_with_gt.jsonl"
-    # llama_3b_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/llama_3b_results_0817_with_gt.jsonl"
-    # llama_8b_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/llama_8b_results_0817_with_gt.jsonl"
-    # phi4_14b_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/results_qwen3_32b_4bit_0820_with_gt.jsonl"
+    # --- MODIFIED: Removed hardcoded paths ---
+    # The hardcoded path variables have been removed.
 
-    # single-lead-i
-    gemini_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/Gemini/single_lead_i/without_gt/ecg_dialogue_gemini-2.5-flash_without_gt_responses.jsonl"
-    pulse_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/PULSE/single_lead_i/without_gt/PULSE_dialogue_model_responses_0707_final.json" 
-    gem_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/GEM/single_lead_i/without_gt/GEM_ecg_dialogue_model_responses_test.json"
-    llama_1b_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/single_lead_i/llama_1b_results_0822.jsonl"
-    llama_3b_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/single_lead_i/llama_3b_results_0822.jsonl"
-    llama_8b_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/single_lead_i/llama_8b_results_0822.jsonl"
-    phi4_14b_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/single_lead_i/results_qwen3_32b_4bit_0820_without_gt_single_lead_i.jsonl"
-
-    # gemini_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/Gemini/single_lead_i/with_gt/ecg_dialogue_gemini-2.5-flash_with_gt_responses.jsonl"
-    # pulse_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/PULSE/single_lead_i/with_gt/PULSE_dialogue_model_responses_0707_final.json" 
-    # gem_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/GEM/single_lead_i/with_gt/GEM_ecg_dialogue_model_responses_test.json"
-    # llama_1b_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/single_lead_i/llama_1b_results_0822_with_gt.jsonl"
-    # llama_3b_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/single_lead_i/llama_3b_results_0822_with_gt.jsonl"
-    # llama_8b_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/single_lead_i/llama_8b_results_0822_with_gt.jsonl"
-    # phi4_14b_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/single_lead_i/results_qwen3_32b_4bit_0820_with_gt_single_lead_i.jsonl"    
-    
-    
-    #single-lead-ii
-    # gemini_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/Gemini/single_lead_ii/without_gt/ecg_dialogue_gemini-2.5-flash_without_gt_responses.jsonl"
-    # pulse_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/PULSE/single_lead_ii/without_gt/PULSE_dialogue_model_responses_0707_final.json" 
-    # gem_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/GEM/single_lead_ii/without_gt/GEM_ecg_dialogue_model_responses_test.json"
-    # llama_1b_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/single_lead_ii/llama_1b_results_0822.jsonl"
-    # llama_3b_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/single_lead_ii/llama_3b_results_0822.jsonl"
-    # llama_8b_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/single_lead_ii/llama_8b_results_0822.jsonl"
-    # phi4_14b_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/single_lead_ii/results_qwen3_32b_4bit_0820_without_gt_single_lead_ii.jsonl"
-
-    # gemini_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/Gemini/single_lead_ii/with_gt/ecg_dialogue_gemini-2.5-flash_with_gt_responses.jsonl"
-    # pulse_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/PULSE/single_lead_ii/with_gt/PULSE_dialogue_model_responses_0707_final.json" 
-    # gem_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/GEM/single_lead_ii/with_gt/GEM_ecg_dialogue_model_responses_test.json"
-    # llama_1b_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/single_lead_ii/llama_1b_results_0822_with_gt.jsonl"
-    # llama_3b_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/single_lead_ii/llama_3b_results_0822_with_gt.jsonl"
-    # llama_8b_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/single_lead_ii/llama_8b_results_0822_with_gt.jsonl"
-    # phi4_14b_file = "/nfs_edlab/hschung/MedRAX/ecg_dialogue_results_icassp/single_lead_ii/results_qwen3_32b_4bit_0820_with_gt_single_lead_ii.jsonl"
-
-
-
-    output_dir = 'ecg_single_lead_i_evaluation_results_final_0904_without_gt_final_gemini_pro'
-    # --- End Configuration ---
-
+    # --- MODIFIED: Populate model_files from args ---
     model_files = {
-        'gemini_file': gemini_file, 
-        'pulse_file': pulse_file,
-        'gem_file' : gem_file, 
-        'llama_1b_file': llama_1b_file, 
-        'llama_3b_file': llama_3b_file, 
-        'llama_8b_file': llama_8b_file,
-        'phi4_14b_file': phi4_14b_file
+        'gemini_file': args.gemini_file, 
+        'pulse_file': args.pulse_file,
+        'gem_file' : args.gem_file, 
+        'llama_1b_file': args.llama_1b_file, 
+        'llama_3b_file': args.llama_3b_file, 
+        'llama_8b_file': args.llama_8b_file,
+        'qwen3_32b_file': args.qwen3_32b_file
     }
     
+    # This loop correctly checks only the paths that were provided (are not None)
     for name, path in model_files.items():
         if path and not os.path.exists(path):
             logger.error(f"Provided file path for '{name}' is invalid: {path}")
             sys.exit(1)
 
-    evaluator = ECGDialogueEvaluator(output_dir=output_dir, max_samples_per_category=args.max_samples_per_category)
+    # --- MODIFIED: Use args.output_dir from parser ---
+    evaluator = ECGDialogueEvaluator(output_dir=args.output_dir, max_samples_per_category=args.max_samples_per_category)
     
     if not evaluator.load_data(**model_files):
         logger.error("Failed to load data files. Exiting.")
