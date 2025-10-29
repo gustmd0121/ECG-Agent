@@ -1,15 +1,49 @@
-<div align="center"><h1> ECG-Agent: On-Device Tool-Calling Agent for ECG Multi-Turn Dialogue </h1><h5 align="center"> If you find this project useful, please give us a star🌟.<h5 align="center"> [Homepage-TBA]  [Paper-TBA]  [Models-TBA]  [Dataset-TBA]Hyunseung Chung<sup>1</sup>,Jungwoo Oh<sup>1</sup>,Daeun Kyung<sup>1</sup>,Jiho Kim<sup>1</sup>,Yeonsu Kwon<sup>1</sup>,Min-Gyu Kim<sup>2</sup>,Edward Choi<sup>1</sup><sup>1</sup>KAIST <sup>2</sup>Ajou University School of Medicine</h5><p align="center">    <img src="figures/overall_figure_0917_final.png" width="90%"></p></div>IntroductionRecent advances in Multimodal Large Language Models have rapidly expanded to electrocardiograms, focusing on classification, report generation, and single-turn QA tasks. However, these models fall short in real-world scenarios, lacking multi-turn conversational ability, on-device efficiency, and precise understanding of ECG measurements such as the PQRST intervals.To address these limitations, we introduce ECG-Agent, the first LLM-based tool-calling agent for multi-turn ECG dialogue. To facilitate its development and evaluation, we also present the ECG-Multi-Turn-Dialogue (ECG-MTD) dataset, a collection of realistic user-assistant multi-turn dialogues for diverse ECG lead configurations. We develop ECG-Agents in various sizes, from on-device capable (1B, 3B) to larger agents (8B, 32B).Experimental results show that ECG-Agents outperform baseline ECG-LLMs in response accuracy. Furthermore, on-device agents achieve comparable performance to larger agents in various evaluations that assess response accuracy, tool-calling ability, and hallucinations, demonstrating their viability for real-world applications.SetupShell# Clone the repository
-git clone https://github.com/YOUR-USERNAME/ECG-Agent.git
+<div align="center">
+
+<h1> ECG-Agent: On-Device Tool-Calling Agent for ECG Multi-Turn Dialogue </h1>
+
+<h5 align="center"> If you find this project useful, please give us a star🌟.
+
+<h5 align="center"> 
+
+[Homepage-TBA] &nbsp;
+[Paper-TBA] &nbsp;
+[Models-TBA] &nbsp;
+[Dataset-TBA]
+
+<br>
+
+Hyunseung Chung<sup>1</sup>,
+Jungwoo Oh<sup>1</sup>,
+Daeun Kyung<sup>1</sup>,
+Jiho Kim<sup>1</sup>,
+Yeonsu Kwon<sup>1</sup>,
+Min-Gyu Kim<sup>2</sup>,
+Edward Choi<sup>1</sup>
+
+<sup>1</sup>KAIST <sup>2</sup>Ajou University School of Medicine
+
+</h5>
+
+<p align="center">
+    <img src="figures/overall_figure_0917_final.png" width="90%">
+</p>
+</div>
+
+## Introduction
+
+Recent advances in Multimodal Large Language Models have rapidly expanded to electrocardiograms, focusing on classification, report generation, and single-turn QA tasks. However, these models fall short in real-world scenarios, lacking multi-turn conversational ability, on-device efficiency, and precise understanding of ECG measurements such as the PQRST intervals.
+
+To address these limitations, we introduce **ECG-Agent**, the first LLM-based tool-calling agent for multi-turn ECG dialogue. To facilitate its development and evaluation, we also present the **ECG-Multi-Turn-Dialogue (ECG-MTD) dataset**, a collection of realistic user-assistant multi-turn dialogues for diverse ECG lead configurations. We develop ECG-Agents in various sizes, from on-device capable (1B, 3B) to larger agents (8B, 32B).
+
+Experimental results show that ECG-Agents outperform baseline ECG-LLMs in response accuracy. Furthermore, on-device agents achieve comparable performance to larger agents in various evaluations that assess response accuracy, tool-calling ability, and hallucinations, demonstrating their viability for real-world applications.
+
+## Setup
+
+```shell
+# Clone the repository
+git clone [https://github.com/YOUR-USERNAME/ECG-Agent.git](https://github.com/YOUR-USERNAME/ECG-Agent.git)
 cd ECG-Agent
 
 # Install dependencies
 pip install -r requirements.txt
-Data PreparationThis project uses the PTB-XL dataset as the source for ECG samples. Our ECG-MTD (ECG-Multi-Turn-Dialogue) dataset is generated based on these samples.Please download the required PTB-XL dataset. We recommend organizing the data as follows in ./data:├── data/
-│   ├── ptbxl/
-│   │   └── ... (PTB-XL dataset files)
-│   └── ecg_mtd/
-│       ├── train_split.json
-│       ├── val_split.json
-│       └── test_split.json
-The ECG-MTD dataset contains 21,837 multi-turn dialogues, split into training (80%), validation (10%), and test (10%) sets.Pretrained Model PreparationECG-Agent relies on several pretrained components:Base LLMs: The agents are instruction-tuned from the following models:Llama-3.2-1B-InstructLlama-3.2-3B-InstructLlama-3.1-8b-InstructQwen3 32BPretrained Tools: The agent utilizes three specialized tools:Classification Tool: A model pretrained using a self-supervised learning method (Random Lead Masking) for robust classification.Measurement Tool: Based on the Neurokit2 package for physiological signal processing.Explanation Tool: Based on the SpectralX framework for time-frequency explanations (used for single-lead configurations).Please download the required base LLMs and place them in a designated models directory.TrainTo train the ECG-Agent models from scratch:Specify the paths to the data, base LLMs, and output directories in a training script (e.g., scripts/train_agent.sh).Run the training script. Training is implemented using the Unsloth framework with LoRA:Shellbash scripts/train_agent.sh
-Key training parameters (from the paper):LoRA: rank 16, $\alpha=16$Optimizer: AdamW 8-bitEpochs: 3 (with early stopping)Learning Rate: $2 \times 10^{-4}$Max Sequence Length: 4096EvaluationWe evaluate the ECG-Agent on the ECG-MTD test set across multiple criteria. Evaluation of response quality, faithfulness, and dialogue quality is conducted using Gemini-2.5-Pro as an LLM-as-a-Judge.Response Quality (1-5 scale):Accuracy: How well the response matches the ground-truth.Completeness: How well the response covers key information from the ground-truth.Tool & Dialogue Performance:Next Action Prediction (NAP): Exact match accuracy for predicting the agent's next action (e.g., Call Classification Tool, Response).Faithfulness (Binary %): Measures if the agent's response is accurately grounded in the tool's output and avoids hallucination.Naturalness (1-5 scale): Assesses the human-like flow of the conversation.CEFR Adherence (1-5 scale): Measures how well the agent adapts to the user's defined language proficiency (Basic, Intermediate, Advanced).Explanation Tool Accuracy:Temporal Intersection over Union (TIoU %): Measures the temporal overlap between the predicted and ground-truth explanation intervals for specific diagnostic classes.
