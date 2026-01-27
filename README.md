@@ -50,6 +50,9 @@ For pre-processing PhysioNet2021 and pretraining W2V+CMSC+RLM, follow the instru
 - [Fairseq-signals repository](https://github.com/Jwoo5/fairseq-signals) (uni-modal tasks section)
 - [W2V+CMSC+RLM guide](https://github.com/Jwoo5/fairseq-signals/blob/master/examples/w2v_cmsc/README.md)
 
+For explanation tool outputs, follow the instructions in: 
+[SpectralX repository](https://github.com/gustmd0121/Time_is_not_Enough)
+
 #### 2. Fine-tuning a Pre-trained Model
 
 **Step 2a:** Preprocess the PTB-XL dataset:
@@ -99,8 +102,6 @@ python extract_tool_outputs.py \
     --output_dir ./results
 ```
 
-**Explanations** (no model needed):
-Follow the instructions in: [SpectralX repository](https://github.com/gustmd0121/Time_is_not_Enough)
 ---
 
 ### Fine-tuning ECG-MTD
