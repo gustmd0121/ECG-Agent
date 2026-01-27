@@ -61,7 +61,7 @@ def load_ecg_and_create_image(ecg_path, output_img_path, lead_config="12-lead"):
         signal = record.p_signal.T  # Transpose to (12, 5000)
         
         # --- MODIFICATION: Conditional plotting based on lead_config ---
-        # pdb.set_trace()
+
         if lead_config == "single-lead-I":
             print(f"Plotting single lead I (index 0) for {os.path.basename(ecg_path)}")
             # The ecg-plot library expects a 1D array for plot_1
@@ -144,9 +144,8 @@ def run_llava_model_multiturn_with_ecg(model, tokenizer, image_processor, image_
                 
                 output_ids = model.generate(
                     input_ids,
-                    ecgs=None,
+                    ecgs=ecg_tensor,
                     images=image_tensor,
-                    image_sizes=[image.size],
                     do_sample=True, temperature=0.2, top_p=None,
                     num_beams=1, max_new_tokens=512, use_cache=True,
                 )
@@ -167,6 +166,7 @@ def run_llava_model_multiturn_with_ecg(model, tokenizer, image_processor, image_
                 conv_history.append_message(conv_history.roles[0], qs)
                 conv_history.append_message(conv_history.roles[1], None)
                 prompt = conv_history.get_prompt()
+
                 input_ids = tokenizer_image_token(prompt, tokenizer, IMAGE_TOKEN_INDEX, return_tensors='pt').unsqueeze(0)
                 
                 # For subsequent turns, we don't need to pass the image again if the model architecture supports it
@@ -179,6 +179,7 @@ def run_llava_model_multiturn_with_ecg(model, tokenizer, image_processor, image_
                 else:
                     conv_history.messages[-1][1] = model_response
         
+
         return model_responses
         
     except Exception as e:
@@ -195,9 +196,9 @@ def process_ecg_dialogue_dataset_with_ecg_signal(dataset_name, ecg_base_dir, out
     print("Loading model...")
     model_name = get_model_name_from_path(model_path)
     tokenizer, model, image_processor, _ = load_pretrained_model(
-        model_path, None, "llava_llama", device_map="cuda:0"
+        model_path, None, "llava_llama", device_map="auto"
     )
-    # pdb.set_trace()
+
     print("Model loaded successfully!")
 
     print(f"Loading dataset {dataset_name}...")
@@ -225,7 +226,7 @@ def process_ecg_dialogue_dataset_with_ecg_signal(dataset_name, ecg_base_dir, out
                 ecg_signal_path = os.path.join(ecg_base_dir, "records500", f"{dir_num:05d}", f"{ecg_num_int:05d}_hr")
                 
                 ecg_image_path = os.path.join(ecg_images_dir, str(ecg_id))
-                # pdb.set_trace()
+                
                 # Pass lead_config to image creation and signal loading
                 ecg_image_path_with_ext = load_ecg_and_create_image(ecg_signal_path, ecg_image_path, lead_config)
                 if not ecg_image_path_with_ext:
@@ -236,7 +237,7 @@ def process_ecg_dialogue_dataset_with_ecg_signal(dataset_name, ecg_base_dir, out
                 if ecg_signal is None:
                     print(f"Failed to load ECG signal for {ecg_id}, skipping...")
                     continue
-                pdb.set_trace()
+
                 tool_actions = ["call_classification_tool", "call_measurement_tool", "call_explanation_tool"]
                 user_turns = [msg for msg in dialogue if msg["role"] == "user"]
                 gt_responses = [msg["content"] for msg in dialogue if msg["role"] == "assistant" and msg.get("action") not in tool_actions and "content" in msg]
@@ -286,17 +287,17 @@ def process_ecg_dialogue_dataset_with_ecg_signal(dataset_name, ecg_base_dir, out
 
 def main():
     parser = argparse.ArgumentParser(description="Process ECG dialogue dataset with GEM model")
-    parser.add_argument("--dataset-name", type=str, default="gustmd0121/single-lead-II-ecg-mtd-dataset", help="HuggingFace dataset name")
-    parser.add_argument("--ecg-base-dir", type=str, default="./ptb-xl-a-large-publicly-available-electrocardiography-dataset-1.0.3", help="Base directory for ECG signal files")
-    parser.add_argument("--output-dir", type=str, default="./results/GEM/single_lead_ii/with_gt", help="Base directory to save results and images")
+    parser.add_argument("--dataset-name", type=str, default="gustmd0121/12-lead-ecg-mtd-dataset-cleaned-final", help="HuggingFace dataset name")
+    parser.add_argument("--ecg-base-dir", type=str, default="/path/to/ptb-xl", help="Base directory for ECG signal files")
+    parser.add_argument("--output-dir", type=str, default="./results/GEM/12_lead/without_gt", help="Base directory to save results and images")
     parser.add_argument("--model-path", type=str, default="LANSG/GEM", help="Path to the GEM model")
     parser.add_argument("--conv-mode", type=str, default="llava_v1", help="Conversation mode for the model")
     parser.add_argument("--split", type=str, default="test", help="Dataset split to process")
     parser.add_argument("--max-samples", type=int, default=None, help="Maximum number of samples to process")
-    parser.add_argument("--history-mode", type=str, default="with_gt", choices=["without_gt", "with_gt"], help="Conversation history mode")
+    parser.add_argument("--history-mode", type=str, default="without_gt", choices=["without_gt", "with_gt"], help="Conversation history mode")
     
     args = parser.parse_args()
-    
+
     # --- MODIFICATION: Determine lead configuration from dataset name ---
     lead_config = "12-lead" # Default
     if "single-lead-ii" in args.dataset_name.lower():
