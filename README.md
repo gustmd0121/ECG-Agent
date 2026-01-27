@@ -32,7 +32,7 @@ Recent advances in Multimodal Large Language Models have rapidly expanded to ele
 To address these limitations, we introduce **ECG-Agent**, the first LLM-based tool-calling agent for multi-turn ECG dialogue. To facilitate its development and evaluation, we also present the **ECG-Multi-Turn-Dialogue (ECG-MTD) dataset**, a collection of realistic user-assistant multi-turn dialogues for diverse ECG lead configurations. We develop ECG-Agents in various sizes, from on-device capable (1B, 3B) to larger agents (8B, 32B).
 Experimental results show that ECG-Agents outperform baseline ECG-LLMs in response accuracy. Furthermore, on-device agents achieve comparable performance to larger agents in various evaluations that assess response accuracy, tool-calling ability, and hallucinations, demonstrating their viability for real-world applications.
 
-#### Data
+### ECG-MTD Dataset
 
 | Type | 12-lead | Lead I | Lead II |
 |------|----------|---------|---------|
@@ -99,6 +99,8 @@ python extract_tool_outputs.py \
     --output_dir ./results
 ```
 
+**Explanations** (no model needed):
+Follow the instructions in: [SpectralX repository](https://github.com/gustmd0121/Time_is_not_Enough)
 ---
 
 ### Fine-tuning ECG-MTD
