@@ -239,12 +239,6 @@ def main(model_name=None, max_seq_length=4096, output_dir=None):
     print("Starting training...")
     trainer.train()
     
-    print("Saving final LoRA adapters (best model based on validation loss)...")
-    trainer.save_model()
-    
-    print("Starting training...")
-    trainer.train()
-    
     print("Saving final LoRA adapters...")
     trainer.save_model()
     

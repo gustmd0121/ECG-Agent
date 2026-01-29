@@ -118,6 +118,18 @@ python finetune_ecg_dialogue_unsloth.py
 python inference_ecg_dialogue.py
 ```
 
+## Citation
 
+If you find this work useful, please cite our paper:
 
-
+```bibtex
+@misc{chung2026ecgagentondevicetoolcallingagent,
+      title={ECG-Agent: On-Device Tool-Calling Agent for ECG Multi-Turn Dialogue},
+      author={Hyunseung Chung and Jungwoo Oh and Daeun Kyung and Jiho Kim and Yeonsu Kwon and Min-Gyu Kim and Edward Choi},
+      year={2026},
+      eprint={2601.20323},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI},
+      url={https://arxiv.org/abs/2601.20323},
+}
+```
