@@ -4,7 +4,7 @@
 
 <h5 align="center"> 
 
-<a href=''><img src='https://img.shields.io/badge/Paper-Arxiv-red'></a>
+<a href='https://arxiv.org/abs/2601.20323'><img src='https://img.shields.io/badge/Paper-Arxiv-red'></a>
 <a href='https://huggingface.co/gustmd0121'><img src='https://img.shields.io/badge/Dataset-Huggingface-yellow'>
 
 <br>
